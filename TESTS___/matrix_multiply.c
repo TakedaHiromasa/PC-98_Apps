@@ -8,6 +8,17 @@
 
 #define SIZE 32
 
+void put_vram(char __far *addr, int box_size, int off_y, int off_x, int y, int x, char val){
+  unsigned int y_point = off_y + (y * box_size);
+  unsigned int x_point = off_x + (x * box_size);
+
+  for(int box_y=0; box_y<box_size; box_y++){
+    for(int box_x=0; box_x<box_size; box_x++){
+      addr[(((y_point+box_y)*80)+((x_point+box_x)/8))] = val;
+    }
+  }
+}
+
 int main(int argc, char *argv[]){
   unsigned int size = 0;
   unsigned int a_seg, b_seg, c_seg, err;
@@ -39,6 +50,27 @@ int main(int argc, char *argv[]){
   printf("0x%lx 0x%lx 0x%lx\n", a, b, c);
 
   puts("\n=== main ===");
+  puts("Running...");
+  char __far *vram0_addr;
+  char __far *vram1_addr;
+  vram0_addr = (char __far *)MK_FP(0xa800, 0x0000);
+  vram1_addr = (char __far *)MK_FP(0xb000, 0x0000);
+  
+  // グラフィック使用開始
+  asm ("mov $0x40, %ah");
+  asm ("int $0x18");
+  for(long i=0;i<size+8;i++){
+    for(long j=0;j<size+2;j++){
+        put_vram(vram1_addr, 2, 10-8, 320-1, i, j, 0xff);
+    }
+  }
+
+  for(long i=0;i<size;i++){
+    for(long j=0;j<size;j++){
+        put_vram(vram1_addr, 2, 10, 320, i, j, 0x00);
+    }
+  }
+
   for(long i=0; i<size*size; i++){
     // printf("0x%lx 0x%lx 0x%lx %d\n", &a[i], &b[i], &c[i], i);
     a[i]=b[i]=i;
@@ -57,6 +89,7 @@ int main(int argc, char *argv[]){
         long c_idx=i*size+j;
         c[c_idx]+=a[a_idx]*b[b_idx];
       }
+      put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
     }
   }
   // end_time = time(NULL);
@@ -66,6 +99,10 @@ int main(int argc, char *argv[]){
   printf("start_time = %lu\n", start_time);
   printf("end_time   = %lu\n", end_time);
   printf("time = %lu\n", end_time - start_time);
+
+  for(int i=0; i<atoi(argv[2]); i++){
+    printf("\a");
+  }
 
   // print calculation result 
   /* for(int i=0;i<size;i++){ */
