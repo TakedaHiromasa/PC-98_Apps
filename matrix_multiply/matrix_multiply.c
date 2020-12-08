@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <bios.h>
 #include <i86.h>
 #include <dos.h>
 #include <conio.h>
+
+#include "../00_include/dos_timer.h"
 
 #define SIZE 32
 
@@ -77,10 +78,8 @@ int main(int argc, char *argv[]){
     c[i]=0;
   }
 
-  long start_time, end_time;
-  // start_time = time(NULL);
-  // _bios_timeofday(_TIME_GETCLOCK, &start_time);
-  start_time = clock();
+  TIME start_time, end_time;
+  get_time(&start_time);
   for(long i=0;i<size;i++){
     for(long j=0;j<size;j++){
       for(long k=0;k<size;k++){
@@ -92,13 +91,13 @@ int main(int argc, char *argv[]){
       put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
     }
   }
-  // end_time = time(NULL);
-  end_time = clock();
-  // _bios_timeofday(_TIME_GETCLOCK, &end_time);
+  get_time(&end_time);
   printf("c[0]=%f\n", c[0]);
-  printf("start_time = %lu\n", start_time);
-  printf("end_time   = %lu\n", end_time);
-  printf("time = %lu\n", end_time - start_time);
+  printf("start_");
+  print_time(&start_time);
+  printf("  end_");
+  print_time(&end_time);
+  print_difftime(&start_time, &end_time);
 
   for(int i=0; i<atoi(argv[2]); i++){
     printf("\a");
