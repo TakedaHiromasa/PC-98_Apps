@@ -18,7 +18,7 @@ int main(void){
   puts("->TIMER STOP!");
   print_time(&end_time);
 
-  print_difftime(&end_time, &start_time);
+  print_difftime(&start_time, &end_time);
 
   return 0;
 }
