@@ -1,13 +1,6 @@
 #include <stdio.h>
 #include <i86.h>
-
-typedef struct _TIME {
-  char hr;
-  char min;
-  char sec;
-  char subs;
-} TIME;
-
+#include "dos_timer.h"
 
 void get_time(TIME *time_ptr){
   // 時刻の読み出し
@@ -30,25 +23,4 @@ void print_difftime(TIME *start_time_ptr, TIME *end_time_ptr){
 
 void print_time(TIME *time_ptr){
   printf("time: %02d:%02d:%02d.%02d\n", time_ptr->hr, time_ptr->min, time_ptr->sec, time_ptr->subs);
-}
-
-int main(void) {
-  TIME start_time, end_time;
-
-  printf("Hello Timer!\n");
-  printf("Type key [Enter] = START & STOP\n");
-
-  while(getchar() != '\n');
-  get_time(&start_time);
-  puts("->TIMER START!");
-  print_time(&start_time);
-
-  while(getchar() != '\n');
-  get_time(&end_time);
-  puts("->TIMER STOP!");
-  print_time(&end_time);
-
-  print_difftime(&end_time, &start_time);
-
-  return 0;
 }
