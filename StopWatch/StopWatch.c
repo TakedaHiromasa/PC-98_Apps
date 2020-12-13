@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <i86.h>
-#include "../../00_include/dos_timer.h"
+#include "../00_include/dos_timer.h"
 
 int main(void){
   TIME start_time, end_time;

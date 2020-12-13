@@ -4,7 +4,7 @@ CCFLAGS := -mcmodel=medium -march=i286
 SRCDIR   := .
 INCL_DIR := ../00_include
 
-TARGET = MM128.EXE
+TARGET = ../DOS_EXEs/S_Watch.EXE
 
 SRCS := $(wildcard $(INCL_DIR)/*.c)
 SRCS += $(wildcard $(SRCDIR)/*.c)

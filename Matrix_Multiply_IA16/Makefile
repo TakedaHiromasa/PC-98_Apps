@@ -2,9 +2,9 @@ CC      := ia16-elf-gcc
 CCFLAGS := -mcmodel=medium -march=i286
 
 SRCDIR   := .
-INCL_DIR := ../../00_include
+INCL_DIR := ../00_include
 
-TARGET = ../TIMER.EXE
+TARGET = ../DOS_EXEs/MM128.EXE
 
 SRCS := $(wildcard $(INCL_DIR)/*.c)
 SRCS += $(wildcard $(SRCDIR)/*.c)
