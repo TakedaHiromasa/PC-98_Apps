@@ -1,17 +1,17 @@
-CC      := ia16-elf-gcc
-CCFLAGS := -mcmodel=medium -march=i286
+CC      := gcc
+CCFLAGS := 
 
 SRCDIR   := .
-INCL_DIR := ../00_include
+INCL_DIR := 
 
-TARGET = MM128.EXE
+TARGET = matrix_multiply
 
 SRCS := $(wildcard $(INCL_DIR)/*.c)
 SRCS += $(wildcard $(SRCDIR)/*.c)
 OBJS := $(SRCS:.c=.o)
 
 all: clean $(OBJS)
-	$(CC) $(CCFLAGS) -o $(TARGET) $(OBJS) -li86
+	$(CC) $(CCFLAGS) -o $(TARGET) $(OBJS)
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -o $@ -c $<
