@@ -7,9 +7,9 @@ int main(void){
 
   puts("Real number input:");
   printf("a=");
-  scanf("%f", &a);
+  scanf("%lf", &a);
   printf("b=");
-  scanf("%f", &b);
+  scanf("%lf", &b);
 
   __asm volatile(
     ".arch pentium;         "
