@@ -2,27 +2,56 @@
 #include <math.h>
 #include "../00_include/fpu.h"
 
-int main(void){
+void float_test(){
+  float a, b;
+  float out;
+
+  puts("** float_test **");
+  puts("Real number input:");
+  printf("a=");
+  scanf("%f", &a);
+  printf("b=");
+  scanf("%f", &b);
+
+  out = fadd(a, b);
+  printf("FADD = %f\n", out);
+
+  out = fmul(a, b);
+  printf("FMUL = %f\n", out);
+
+  return;
+}
+
+void double_test(){
   double a, b;
   double out;
 
+  puts("** double_test **");
   puts("Real number input:");
   printf("a=");
   scanf("%lf", &a);
   printf("b=");
   scanf("%lf", &b);
 
-  finit();
-
   out = faddl(a, b);
-  printf("FADD = %f\n", out);
+  printf("FADDL = %f\n", out);
 
   out = fmull(a, b);
-  printf("FMUL = %f\n", out);
+  printf("FMULL = %f\n", out);
 
+  return;
+}
+
+int main(void){
+
+  finit();
+
+  float_test();
+  // double_test();
 
   // LD-ST test
   int i = 1;
+  double out;
   __asm volatile(
     ".arch pentium; "
     "finit; "

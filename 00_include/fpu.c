@@ -9,6 +9,42 @@ void finit(){
   );
 }
 
+float fadd(float a, float b){
+  float out;
+
+  __asm volatile(
+    ".arch pentium;         "
+    "finit;                 "
+    "fld  %1;               " // %1 -> st0
+    "fld  %2;               " // %2 -> st0, %1 -> st1
+    "fadd %%st(1), %%st(0); " // st1 + st0 -> st0
+    "fstp %0;               " // st0 -> %0 & pop st0
+    "fwait;                 "
+    ".arch i286             "
+    : "=m" (out) : "m" (a), "m" (b)
+  );
+
+  return out;
+}
+
+float fmul(float a, float b){
+  float out;
+
+  __asm volatile(
+    ".arch pentium;         "
+    "finit;                 "
+    "fld  %1;               " // %1 -> st0
+    "fld  %2;               " // %2 -> st0, %1 -> st1
+    "fmul %%st(1), %%st(0); " // st1 * st0 -> st0
+    "fstp %0;               " // st0 -> %0 & pop st0
+    "fwait;                 "
+    ".arch i286             "
+    : "=m" (out) : "m" (a), "m" (b)
+  );
+
+  return out;
+}
+
 double faddl(double a, double b){
   double out;
 
@@ -35,7 +71,7 @@ double fmull(double a, double b){
     "finit;                 "
     "fldl  %1;              " // %1 -> st0
     "fldl  %2;              " // %2 -> st0, %1 -> st1
-    "fmul %%st(1), %%st(0); " // st1 + st0 -> st0
+    "fmul %%st(1), %%st(0); " // st1 * st0 -> st0
     "fstpl %0;              " // st0 -> %0 & pop st0
     "fwait;                 "
     ".arch i286             "
