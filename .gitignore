@@ -1,7 +1,9 @@
 .DS_Store
 *.o
 *.com
+*.COM
 *.exe
+*.EXE
 *.out
 
 !CL.EXE
