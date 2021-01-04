@@ -10,6 +10,14 @@
 #define E_HAS_ERROR(err)   ((err) != E_SUCCESS)
 
 typedef struct {
+  unsigned long  Length_B;      /* 転送するバイト数   */
+  unsigned int   SourceHandle;  /* 転送元のハンドル   */
+  unsigned long  SourceOffset;  /* 転送元のオフセット */
+  unsigned int   DestHandle;    /* 転送先のハンドル   */
+  unsigned long  DestOffset;    /* 転送先のオフセット */
+} XMS_MVPARAM;
+
+typedef struct {
   unsigned int var;
   unsigned int rev;
   unsigned int hma;
@@ -132,6 +140,58 @@ int XMS_free(SMEM *mem_p){
   return err_code;
 }
 
+unsigned long XMS_write(SMEM *mem_p, void __far *buf, unsigned long size){
+  char success  = 0;
+  char err_code = 0;
+
+  XMS_MVPARAM param;
+  param.Length_B     = size;
+  param.SourceHandle = 0;
+  param.SourceOffset = (unsigned long)buf;
+  param.DestHandle   = (unsigned int)mem_p->handle;
+  param.DestOffset   = mem_p->linptr;
+
+  __asm volatile(
+  "movw  %2,    %%si;"
+  "mov   $0x0b, %%ah;"
+  "lcall *XMS_CALL;  "
+  "mov   %%ah,  %0;  "
+  "mov   %%bl,  %1;  "
+  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%dx");
+
+  if(!success){
+    return (unsigned long)err_code;
+  }
+  mem_p->linptr += size;
+  return size;
+}
+
+unsigned long XMS_read(SMEM *mem_p, void __far *buf, unsigned long size){
+  char success  = 0;
+  char err_code = 0;
+
+  XMS_MVPARAM param;
+  param.Length_B     = size;
+  param.SourceHandle = (unsigned int)mem_p->handle;
+  param.SourceOffset = mem_p->linptr;
+  param.DestHandle   = 0;
+  param.DestOffset   = (unsigned long)buf;
+
+  __asm volatile(
+  "movw  %2,    %%si;"
+  "mov   $0x0b, %%ah;"
+  "lcall *XMS_CALL;  "
+  "mov   %%ah,  %0;  "
+  "mov   %%bl,  %1;  "
+  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%dx");
+
+  if(!success){
+    return (unsigned long)err_code;
+  }
+  // mem_p->linptr += size;
+  return size;
+}
+
 int main(void){
   puts("Hello XMS!\n");
 
@@ -155,17 +215,23 @@ int main(void){
   printf("max_block: %d[KB]  total: %d[KB]\n\n", max_block, total);
 
 
-  char *buf_s = "test strings";
-  char *buf_d = "            ";
-  unsigned long size = 12L;
+  char *buf_s = "XMS R/W DONE!!";
+  char *buf_d = "              ";
+  unsigned long size = 14L;
   SMEM mem_p;
   char err;
 
-  err = XMS_malloc(&mem_p, 2911*1024L);
+  err = XMS_malloc(&mem_p, size);
   if(E_HAS_ERROR(err)){
     printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
     exit(1);
   }
+
+  XMS_write(&mem_p, buf_s, size);
+  mem_p.linptr = 0L;
+  XMS_read(&mem_p, buf_d, size);
+
+  printf("%s\n", buf_d);
 
   err = XMS_free(&mem_p);
   if(E_HAS_ERROR(err)){
