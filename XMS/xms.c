@@ -29,24 +29,24 @@ typedef struct {
   unsigned long  linptr;  /* リニア・ポインタ */
 } SMEM;
 
-int XMS_exists(){
-  int flg = 0;
+char XMS_exists(){
+  char err_code = 1;
   __asm volatile(
     "CHK_XMSDRV:;"
     "mov $0x4300, %%ax;"
     "int $0x2F;"
     "cmp $0x80, %%al;"
     "jz  CHK_XMSDRV_OK;"
-    "movw $0x00, %0;"
-    "jmp  END;"
+    "mov $0x01, %0;"
+    "jmp END;"
     
     "CHK_XMSDRV_OK:;"
-    "movw $0x01, %0;"
+    "mov $0x00, %0;"
     
     "END:;"
-  : "=r"(flg) :);
+  : "=r"(err_code) :);
 
-  return flg;
+  return err_code;
 }
 
 void __far *XMS_init(){
@@ -89,6 +89,10 @@ void XMS_getinfo(XMS_INFO *info){
 
 char XMS_getFreeSpace(unsigned int *max_block, unsigned int *total){
   char err_code;
+
+  *max_block = 0;
+  *total     = 0;
+
   __asm volatile(
   "mov   $0x08, %%ah;"
   "lcall *XMS_CALL;"
@@ -96,6 +100,8 @@ char XMS_getFreeSpace(unsigned int *max_block, unsigned int *total){
   "movw  %%dx, %1;"
   "mov   %%bl, %2;"
   : "=r"(*max_block), "=r"(*total), "=r"(err_code) :);
+
+  if((*max_block|*total) != 0) err_code = 0;
 
   return err_code;
 }
@@ -193,33 +199,47 @@ unsigned long XMS_read(SMEM *mem_p, void __far *buf, unsigned long size){
 }
 
 int main(void){
+  char err;
+
   puts("Hello XMS!\n");
 
-  if(XMS_exists() == 0){
-    puts("No XMS driver.");
-    return -1;
+  /* ====================  /
+  /  Setup                 /
+  /  ==================== */
+  // INSTALLATION CHECK
+  err = XMS_exists();
+  if(E_HAS_ERROR(err)){
+    puts("XMS_exists ERROR: No XMS driver.");
+    exit(1);
   }
   puts("XMS driver...OK.");
 
+  // GET DRIVER ADDRESS
   XMS_init();
 
+  // VERSION DUMP (Not required)
   XMS_INFO xms_info;
   XMS_getinfo(&xms_info);
   printf("version=%s rev=%x ", xms_info.var_txt, xms_info.rev);
   printf("hma=%s\n\n", xms_info.hma ? "OK" : "NO");
 
-  puts("XMS free space:");
-  unsigned int max_block = 0;
-  unsigned int total = 0;
-  XMS_getFreeSpace(&max_block, &total);
+  // CHECK FREE SPACE (Not required)
+  unsigned int max_block, total;
+  err = XMS_getFreeSpace(&max_block, &total);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_getFreeSpace ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+  printf("=== XMS free space ===\n");
   printf("max_block: %d[KB]  total: %d[KB]\n\n", max_block, total);
 
-
+  /* ====================  /
+  /  Write & Reed test     /
+  /  ==================== */
   char *buf_s = "XMS R/W DONE!!";
   char *buf_d = "              ";
   unsigned long size = 14L;
   SMEM mem_p;
-  char err;
 
   err = XMS_malloc(&mem_p, size);
   if(E_HAS_ERROR(err)){
