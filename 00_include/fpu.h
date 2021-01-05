@@ -2,13 +2,13 @@
 #define FPU_H
 
 void finit();
+void zeroset();
 
 // FLOAT TYPE
+float fpop();
 float fadd(float a, float b);
 float fmul(float a, float b);
-int fma_r(float a, float b);
-int zeroset();
-float pop();
+int   fma_r(float a, float b);
 
 // DOUBLE TYPE
 double faddl(double a, double b);

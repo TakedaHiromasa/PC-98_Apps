@@ -44,6 +44,8 @@ void double_test(){
 
 int main(void){
 
+  // FPUを使用する場合
+  // 必ず最初にfinitすること！
   finit();
 
   float_test();
@@ -54,7 +56,6 @@ int main(void){
   double out;
   __asm volatile(
     ".arch pentium; "
-    "finit; "
     "fild  %1; "
     "fstpl %0; "
     "fwait; "

@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
         //c[c_idx]=fadd(c[c_idx],fmul(a[a_idx],b[b_idx]));
 	fma_r(a[a_idx],b[b_idx]);
       }
-      c[c_idx]=pop();
+      c[c_idx]=fpop();
       //put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
     }
   }

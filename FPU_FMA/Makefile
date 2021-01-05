@@ -4,7 +4,7 @@ CCFLAGS := -mcmodel=medium -march=i286
 SRCDIR   := .
 INCL_DIR := ../00_include
 
-TARGET = ../DOS_EXEs/FPU.EXE
+TARGET = ../DOS_EXEs/FMA.EXE
 
 SRCS := $(wildcard $(INCL_DIR)/*.c)
 SRCS += $(wildcard $(SRCDIR)/*.c)
