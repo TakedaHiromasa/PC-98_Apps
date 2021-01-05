@@ -82,6 +82,10 @@ int main(int argc, char *argv[]){
     c[i]=cc[i]=0;
   }
 
+  // FPUを使用する場合
+  // 必ず最初にfinitすること！
+  finit();
+  
   TIME start_time, end_time;
   get_time(&start_time);
   for(long i=0;i<size;i++){

@@ -82,6 +82,10 @@ int main(int argc, char *argv[]){
     c[i]=cc[i]=0;
   }
 
+  // FPUを使用する場合
+  // 必ず最初にfinitすること！
+  finit();
+
   TIME start_time, end_time;
   get_time(&start_time);
   for(long i=0;i<size;i++){
@@ -92,11 +96,10 @@ int main(int argc, char *argv[]){
         long a_idx=i*size+k;
         long b_idx=k*size+j;
         //c[c_idx]+=a[a_idx]*b[b_idx];
-        //c[c_idx]=fadd(c[c_idx],fmul(a[a_idx],b[b_idx]));
-	fma_r(a[a_idx],b[b_idx]);
+        fma_r(a[a_idx],b[b_idx]);
       }
-      c[c_idx]=fpop();
-      //put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
+      c[c_idx] = fpop();
+      put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
     }
   }
   get_time(&end_time);
