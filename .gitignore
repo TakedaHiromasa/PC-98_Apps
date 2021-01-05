@@ -5,5 +5,5 @@
 *.exe
 *.EXE
 *.out
-
+*~
 !CL.EXE
