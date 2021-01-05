@@ -28,7 +28,7 @@ void __far *XMS_init(){
   void __far *xms_dep = NULL;
 
   __asm volatile(
-    "mov  $0x4310, %%ax;"
+    "mov $0x4310, %%ax;"
     "int $0x2F;"
     "mov %%bx, %0;"
     "mov %%es, %1;"
@@ -137,7 +137,7 @@ unsigned long XMS_write(SMEM *mem_p, void __far *buf, unsigned long size){
   "lcall *XMS_CALL;  "
   "mov   %%ah,  %0;  "
   "mov   %%bl,  %1;  "
-  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%dx");
+  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%si");
 
   if(!success){
     return (unsigned long)err_code;
@@ -163,7 +163,7 @@ unsigned long XMS_read(SMEM *mem_p, void __far *buf, unsigned long size){
   "lcall *XMS_CALL;  "
   "mov   %%ah,  %0;  "
   "mov   %%bl,  %1;  "
-  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%dx");
+  : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%si");
 
   if(!success){
     return (unsigned long)err_code;
