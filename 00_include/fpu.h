@@ -6,6 +6,9 @@ void finit();
 // FLOAT TYPE
 float fadd(float a, float b);
 float fmul(float a, float b);
+int fma_r(float a, float b);
+int zeroset();
+float pop();
 
 // DOUBLE TYPE
 double faddl(double a, double b);

@@ -27,6 +27,51 @@ float fadd(float a, float b){
   return out;
 }
 
+int fma_r(float a, float b){
+  
+  __asm volatile(
+    ".arch pentium;         "
+    "fld  %0;               " // %1 -> st0
+    "fld  %1;               " // %2 -> st0, %1 -> st1
+    "fmul %%st(1), %%st(0); " // st1 * st0 -> st0
+    "fadd %%st(2), %%st(0); " // fma 
+    "fwait;                 "
+    ".arch i286             "
+    : : "m" (a), "m" (b)
+  );
+  return 0;
+}
+
+
+int zeroset(){
+  float in=0;
+
+  __asm volatile(
+    ".arch pentium;         "
+    "finit;                 "
+    "fld  %0;               " // %1 -> st0
+    "fwait;                 "
+    ".arch i286             "
+    :  : "m" (in)
+  );
+  return 0;
+}
+
+float pop(){
+  float out;
+
+  __asm volatile(
+    ".arch pentium;         "
+    "fstp %0;               " // st0 -> %0 & pop st0
+    "fwait;                 "
+    ".arch i286             "
+    : "=m" (out) 
+  );
+
+  return out;
+}
+
+
 float fmul(float a, float b){
   float out;
 
