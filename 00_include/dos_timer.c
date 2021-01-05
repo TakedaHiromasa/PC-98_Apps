@@ -14,11 +14,13 @@ void get_time(TIME *time_ptr){
 }
 
 void print_difftime(TIME *start_time_ptr, TIME *end_time_ptr){
-  printf("diff_time: %02d:%02d:%02d.%02d\n", 
-        (end_time_ptr->hr   - start_time_ptr->hr  ), 
-        (end_time_ptr->min  - start_time_ptr->min ), 
-        (end_time_ptr->sec  - start_time_ptr->sec ), 
-        (end_time_ptr->subs - start_time_ptr->subs));
+  int diff_time=(end_time_ptr->hr   - start_time_ptr->hr)*3600+(end_time_ptr->min  - start_time_ptr->min )*60+(end_time_ptr->sec  - start_time_ptr->sec );
+  /* printf("diff_time: %02d:%02d:%02d.%02d\n",  */
+  /*       (end_time_ptr->hr   - start_time_ptr->hr  ),  */
+  /*       (end_time_ptr->min  - start_time_ptr->min ),  */
+  /*       (end_time_ptr->sec  - start_time_ptr->sec ),  */
+  /*       (end_time_ptr->subs - start_time_ptr->subs)); */
+  printf("diff_time: %02dsec\n",diff_time);
 }
 
 void print_time(TIME *time_ptr){
