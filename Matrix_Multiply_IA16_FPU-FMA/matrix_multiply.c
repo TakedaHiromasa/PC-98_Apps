@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
   printf("0x%lx 0x%lx 0x%lx\n", a, b, c);
 
   puts("\n=== main ===");
-  puts("Running...");
+  printf("Running"); fflush(stdout);
   char __far *vram0_addr;
   char __far *vram1_addr;
   vram0_addr = (char __far *)MK_FP(0xa800, 0x0000);
@@ -75,6 +75,8 @@ int main(int argc, char *argv[]){
         put_vram(vram1_addr, 2, 10, 320, i, j, 0x00);
     }
   }
+
+  printf(" -> Array init"); fflush(stdout);
   TIME start_time, end_time, seed_time;
   get_time(&seed_time);
   srand((&seed_time)->sec);
@@ -85,11 +87,10 @@ int main(int argc, char *argv[]){
     c[i]=cc[i]=0;
   }
 
-
+  printf(" -> Matrix multiply\n"); fflush(stdout);
   // FPUを使用する場合
   // 必ず最初にfinitすること！
   finit();
-
 
   get_time(&start_time);
   for(long i=0;i<size;i++){
