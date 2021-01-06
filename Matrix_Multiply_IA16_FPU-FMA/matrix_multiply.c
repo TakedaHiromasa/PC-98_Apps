@@ -128,8 +128,8 @@ int main(int argc, char *argv[]){
   for(int i=0;i<size*size;i++){
     min = fminf(fabs(c[i]-cc[i]),min);
     max = fmaxf(fabs(c[i]-cc[i]),max);
-    lmin = fminf(fabs(c[i]-cc[i])/cc[i],lmin);
-    lmax = fmaxf(fabs(c[i]-cc[i])/cc[i],lmax);
+    lmin = fminf(fabs(c[i]-cc[i])/fabs(cc[i]),lmin);
+    lmax = fmaxf(fabs(c[i]-cc[i])/fabs(cc[i]),lmax);
     err_sum+=fabs(c[i]-cc[i]);
     ave+=cc[i];
   }
