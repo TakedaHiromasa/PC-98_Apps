@@ -54,10 +54,12 @@ int fma_r(float a, float b){
   
   __asm volatile(
     ".arch pentium;         "
-    "fld  %0;               " // %0 -> st0
-    "fld  %1;               " // %1 -> st0, %0 -> st1
-    "fmul %%st(1), %%st(0); " // st1 * st0 -> st0
-    "fadd %%st(2), %%st(0); " // fma 
+    "fld   %0;              " // %0 -> st0
+    "fld   %1;              " // %1 -> st0, %0 -> st1
+    "fmul  %%st(1), %%st(0);" // st1 * st0 -> st0
+    "fadd  %%st(2), %%st(0);" // fma 
+    "ffree %%st(1);         "
+    "ffree %%st(2);         "
     "fwait;                 "
     ".arch i286             "
     : : "m" (a), "m" (b)

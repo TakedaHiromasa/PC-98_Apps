@@ -90,13 +90,14 @@ int main(int argc, char *argv[]){
   get_time(&start_time);
   for(long i=0;i<size;i++){
     for(long j=0;j<size;j++){
+      finit();
       zeroset(); // zero set
       long c_idx=i*size+j;
       for(long k=0;k<size;k++){
         long a_idx=i*size+k;
         long b_idx=k*size+j;
         //c[c_idx]+=a[a_idx]*b[b_idx];
-        fma_r(a[a_idx],b[b_idx]);
+        fma_r(a[a_idx], b[b_idx]);
       }
       c[c_idx] = fpop();
       put_vram(vram0_addr, 2, 10, 320, i, j, 0xff);
