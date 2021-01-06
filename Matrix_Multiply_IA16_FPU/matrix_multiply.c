@@ -75,10 +75,13 @@ int main(int argc, char *argv[]){
         put_vram(vram1_addr, 2, 10, 320, i, j, 0x00);
     }
   }
-
+  TIME start_time, end_time,seed_time;
+  get_time(&seed_time);
+  srand((&seed_time)->sec);
   for(long i=0; i<size*size; i++){
     // printf("0x%lx 0x%lx 0x%lx %d\n", &a[i], &b[i], &c[i], i);
-    a[i]=b[i]=i;
+    a[i]=(rand()%1001/500.0)-1;
+    b[i]=(rand()%1001/500.0)-1;
     c[i]=cc[i]=0;
   }
 
@@ -86,7 +89,7 @@ int main(int argc, char *argv[]){
   // 必ず最初にfinitすること！
   finit();
   
-  TIME start_time, end_time;
+
   get_time(&start_time);
   for(long i=0;i<size;i++){
     for(long j=0;j<size;j++){
