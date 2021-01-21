@@ -11,7 +11,7 @@ int dos_fopen(const char* file_name){
 
   __asm volatile(
     "mov $0x3D, %%ah;"
-    "mov $0x00, %%al;"
+    "mov $0x02, %%al;"
     // "movw %, %%ds;"
     "movw %2, %%dx;"
     "int $0x21;"
@@ -103,6 +103,54 @@ int dos_fread(void __far *array, size_t size, size_t n, uint handle){
   __asm volatile(
     "movw %1,    %%cx;"
     "mov  $0x3f, %%ah;"
+    "int  $0x21;     "
+    ""
+  : : "bx"(handle), "cx"(edge) : "%%cx"
+  );
+
+  return 0;
+}
+
+int dos_fwrite(void __far *array, size_t size, size_t n, uint handle){
+  uint err_code = 0;
+  
+  int loop_n = (size*n)/BUFFSIZE;
+  int edge = (size*n)%BUFFSIZE;
+
+  if((size*n) < BUFFSIZE){
+    __asm volatile(
+      "movw %0, %%bx;  "
+      "movw %1, %%cx;  "
+      "lds  %2, %%dx;"
+      "mov  $0x40, %%ah;"
+      "int  $0x21;     "
+      ""
+    : : "bx"(handle), "cx"(size*n), "m"(array) : "%%bx", "%%cx", "%%ds", "%%dx"
+    );
+    
+    return 0;
+  }
+
+  __asm volatile(
+    "movw %0, %%bx;  "
+    "movw %1, %%cx;  "
+    "lds  %2, %%dx;"
+    ""
+  : : "bx"(handle), "cx"(BUFFSIZE), "m"(array) : "%%bx", "%%cx", "%%ds", "%%dx"
+  );
+
+  for (int i = 0; i < loop_n; i++){
+    __asm volatile(
+      "mov  $0x40, %%ah;"
+      "int  $0x21;     "
+      "add  %%cx, %%dx;"
+      : : :
+    );
+  }
+
+  __asm volatile(
+    "movw %1,    %%cx;"
+    "mov  $0x40, %%ah;"
     "int  $0x21;     "
     ""
   : : "bx"(handle), "cx"(edge) : "%%cx"
