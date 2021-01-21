@@ -21,7 +21,7 @@ int main(int argc, char *argv[]){
   float *dst  = malloc(sizeof(float) * size * size);
 
   for(long i=0; i<(long)size * size; i++){
-    data[i] = i;
+    data[i] = i/1000.0;
   }
 
   /* 転置行列 */
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 
   for(int y=0; y<size; y++){
     for(int x=0; x<size; x++){
-      printf("%10.1f ", dst[y*size+x]);
+      printf("%10.5f ", dst[y*size+x]);
     }
     puts("");
   }
