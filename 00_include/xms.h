@@ -7,6 +7,7 @@
 #define E_IS_SUCCESS(err)  ((err) == E_SUCCESS)
 #define E_HAS_ERROR(err)   ((err) != E_SUCCESS)
 
+#pragma pack (push, 0)   //パディングを１byteに変更
 typedef struct {
   unsigned long  Length_B;      /* 転送するバイト数   */
   unsigned int   SourceHandle;  /* 転送元のハンドル   */
@@ -26,6 +27,7 @@ typedef struct {
   unsigned int   handle;  /* ハンドル       */
   unsigned long  linptr;  /* リニア・ポインタ */
 } SMEM;
+#pragma pack (pop)
 
 char XMS_exists();
 void __far *XMS_init();

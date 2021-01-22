@@ -121,8 +121,8 @@ int XMS_free(SMEM *mem_p){
 }
 
 unsigned long XMS_write(SMEM *mem_p, void __far *buf, unsigned long size){
-  char success  = 0;
-  char err_code = 0;
+  unsigned int  success  = 0;
+  unsigned char err_code = 0;
 
   XMS_MVPARAM param;
   param.Length_B     = size;
@@ -135,7 +135,7 @@ unsigned long XMS_write(SMEM *mem_p, void __far *buf, unsigned long size){
   "movw  %2,    %%si;"
   "mov   $0x0b, %%ah;"
   "lcall *XMS_CALL;  "
-  "mov   %%ah,  %0;  "
+  "movw  %%ax,  %0;  "
   "mov   %%bl,  %1;  "
   : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%si");
 
@@ -143,12 +143,13 @@ unsigned long XMS_write(SMEM *mem_p, void __far *buf, unsigned long size){
     return (unsigned long)err_code;
   }
   mem_p->linptr += size;
+
   return size;
 }
 
 unsigned long XMS_read(SMEM *mem_p, void __far *buf, unsigned long size){
-  char success  = 0;
-  char err_code = 0;
+  unsigned int  success  = 0;
+  unsigned char err_code = 0;
 
   XMS_MVPARAM param;
   param.Length_B     = size;
@@ -161,13 +162,14 @@ unsigned long XMS_read(SMEM *mem_p, void __far *buf, unsigned long size){
   "movw  %2,    %%si;"
   "mov   $0x0b, %%ah;"
   "lcall *XMS_CALL;  "
-  "mov   %%ah,  %0;  "
+  "movw  %%ax,  %0;  "
   "mov   %%bl,  %1;  "
   : "=r"(success), "=r"(err_code) : "r"(FP_OFF(&param)) : "%si");
 
   if(!success){
     return (unsigned long)err_code;
   }
-  // mem_p->linptr += size;
+  mem_p->linptr += size;
+
   return size;
 }
