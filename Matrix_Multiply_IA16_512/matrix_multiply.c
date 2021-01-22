@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
   printf("max_block: %d[KB]  total: %d[KB]\n", max_block, total);
 
   // malloc
-  SMEM Amem_p, Bmem_p;
+  SMEM Amem_p, Bmem_p, Cmem_p;
   err = XMS_malloc(&Amem_p, (long)sizeof(float)*size*size);
   if(E_HAS_ERROR(err)){
     printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
@@ -148,6 +148,12 @@ int main(int argc, char *argv[]){
   }
 
   err = XMS_malloc(&Bmem_p, (long)sizeof(float)*size*size);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+
+  err = XMS_malloc(&Cmem_p, (long)sizeof(float)*size*size);
   if(E_HAS_ERROR(err)){
     printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
     exit(1);
@@ -197,8 +203,6 @@ int main(int argc, char *argv[]){
 
   printf(" -> Matrix multiply\n"); fflush(stdout);
   TIME start_time, end_time, seed_time;
-  // uint Abin_handle = dos_fopen("../MM512BIN/A.bin");
-  uint Cbin_handle = dos_fopen("C.bin");
   finit();
 
   get_time(&start_time);
@@ -219,16 +223,40 @@ int main(int argc, char *argv[]){
       c[c_idx] = fpop();
       put_vram(vram0_addr, 2, 10, 320, i/4, j/4, 0xff);
     }
-
-    dos_fwrite((void __far *)c, sizeof(float), size, Cbin_handle);
-
+    XMS_write(&Cmem_p, c, sizeof(float)*size);
   }
   get_time(&end_time);
+
+  // XMSの読み取り番地Offsetを先頭に
+  Cmem_p.linptr = 0L;
+
+  /////////////////////
+  // Result
+  /////////////////////
+  XMS_read(&Cmem_p, c, sizeof(float)*size);
+  printf("c[0] = %f\n", c[0]);
+  printf("start_");
+  print_time(&start_time);
+  printf("  end_");
+  print_time(&end_time);
+  print_difftime(&start_time, &end_time);
+
+  ///////////////////////////
+  // 結果をバイナリとして出力
+  ///////////////////////////
+  // XMSの読み取り番地Offsetを先頭に
+  Cmem_p.linptr = 0L;
+  uint Cbin_handle = dos_fopen("C.bin");
+  for (int i = 0; i< 512; i++){
+    XMS_read(&Cmem_p, c, sizeof(float)*size);
+    dos_fwrite((void __far *)c, sizeof(float), size, Cbin_handle);
+  }
+  dos_fclose(Cbin_handle);
 
   /////////////////////
   // 片付け
   /////////////////////
-  dos_fclose(Cbin_handle);
+  // dos_fclose(Cbin_handle);
 
   err = XMS_free(&Amem_p);
   if(E_HAS_ERROR(err)){
@@ -242,15 +270,11 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 
-  /////////////////////
-  // Result
-  /////////////////////
-  // printf("c[0] = %f\n", c[0]);
-  printf("start_");
-  print_time(&start_time);
-  printf("  end_");
-  print_time(&end_time);
-  print_difftime(&start_time, &end_time);
+  err = XMS_free(&Cmem_p);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_free ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
 
   // for(int i=0; i<atoi(argv[2]); i++){
   //   printf("\a");
