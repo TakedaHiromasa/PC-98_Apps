@@ -7,3 +7,6 @@
 *.out
 *~
 !CL.EXE
+MatrixBin_dump/main
+DOS_EXEs/C.bin
+Matrix_Multiply_IA32/matrix_multiply

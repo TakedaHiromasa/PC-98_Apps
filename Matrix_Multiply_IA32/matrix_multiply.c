@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define SIZE 32
+#define SIZE 512
 
 double getCurtMsec(){
     struct timeval tv;
@@ -16,8 +16,8 @@ int main(){
   float *c = malloc(sizeof(float)*SIZE*SIZE);
 
   for(long i=0; i<(long)SIZE*SIZE; i++){
-    a[i]=b[i]=i;
-    c[i]=0;
+    a[i] = b[i] = i/1000.0;
+    c[i] = 0;
   }
   
   double start_time, end_time;
@@ -39,10 +39,10 @@ int main(){
   printf("time: %.5f[msec]\n", end_time - start_time);
 
   // print calculation result 
-  /* for(int i=0;i<SIZE;i++){ */
-  /*   for(int j=0;j<SIZE;j++){ */
-  /*     printf("%f,",c[i*SIZE+j]); */
-  /*   } */
-  /*   printf("\n"); */
-  /* } */
+  // for(int i=0;i<SIZE;i++){
+  //   for(int j=0;j<SIZE;j++){
+  //     printf("%15.5f,",c[i*SIZE+j]);
+  //   }
+  //   printf("\n");
+  // }
 }
