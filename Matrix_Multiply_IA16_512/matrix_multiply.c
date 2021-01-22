@@ -8,6 +8,7 @@
 #include "../00_include/fpu.h"
 #include "../00_include/dos_fileio.h"
 #include "../00_include/dos_timer.h"
+#include "../00_include/xms.h"
 
 #define SIZE 512
 
