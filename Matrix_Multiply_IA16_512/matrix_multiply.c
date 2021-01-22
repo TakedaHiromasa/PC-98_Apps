@@ -136,27 +136,40 @@ int main(int argc, char *argv[]){
     printf("XMS_getFreeSpace ERROR: code=%02X\n", (err & 0x00FF));
     exit(1);
   }
-  printf("=== XMS free space ===\n");
-  printf("max_block: %d[KB]  total: %d[KB]\n\n", max_block, total);
+  puts("\n=== XMS free space ===");
+  printf("max_block: %d[KB]  total: %d[KB]\n", max_block, total);
 
   // malloc
-  SMEM Bmem_p;
-  err = XMS_malloc(&Bmem_p, size*size);
+  SMEM Amem_p, Bmem_p;
+  err = XMS_malloc(&Amem_p, (long)sizeof(float)*size*size);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+
+  err = XMS_malloc(&Bmem_p, (long)sizeof(float)*size*size);
   if(E_HAS_ERROR(err)){
     printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
     exit(1);
   }
 
   puts("\n=== file -> XMS ===");
-  // file -> XMS
+  uint Abin_handle = dos_fopen("../MM512BIN/A.bin");
+  for (int i = 0; i < size; i++){
+    dos_fread((void __far *)a, sizeof(float), size, Abin_handle); // 値を512個(1行分)読み込む
+    XMS_write(&Amem_p, a, sizeof(float)*size);
+  }
+  dos_fclose(Abin_handle);
+  
   uint Bbin_handle = dos_fopen("../MM512BIN/B_T.bin");
   for (int i = 0; i < size; i++){
     dos_fread((void __far *)b, sizeof(float), size, Bbin_handle); // 値を512個(1行分)読み込む
-    XMS_write(&Bmem_p, b, size);
+    XMS_write(&Bmem_p, b, sizeof(float)*size);
   }
   dos_fclose(Bbin_handle);
 
   // XMSの読み取り番地Offsetを先頭に
+  Amem_p.linptr = 0L;
   Bmem_p.linptr = 0L;
 
   puts("\n=== main ===");
@@ -184,16 +197,16 @@ int main(int argc, char *argv[]){
 
   printf(" -> Matrix multiply\n"); fflush(stdout);
   TIME start_time, end_time, seed_time;
-  uint Abin_handle = dos_fopen("../MM512BIN/A.bin");
+  // uint Abin_handle = dos_fopen("../MM512BIN/A.bin");
   uint Cbin_handle = dos_fopen("C.bin");
   finit();
 
   get_time(&start_time);
   for(long i=0;i<size;i++){
-    dos_fread((void __far *)a, sizeof(float), size, Abin_handle); // 値を512個(1行分)読み込む
+    XMS_read(&Amem_p, a, sizeof(float)*size);
     Bmem_p.linptr = 0L;
     for(long j=0;j<size;j++){
-      XMS_read(&Bmem_p, b, size);
+      XMS_read(&Bmem_p, b, sizeof(float)*size);
       finit();
       zeroset(); // zero set
       long c_idx = j; //i*size+j
@@ -201,7 +214,6 @@ int main(int argc, char *argv[]){
       for(long k=0; k<size; k++){
         long a_idx = k; //i*size+k
         long b_idx = k; //k*size+j
-        // c[c_idx] = fadd(c[c_idx], fmul(a[a_idx], b[b_idx])); // こちらの方が誤差が小さい
         fma_r(a[a_idx], b[b_idx]);
       }
       c[c_idx] = fpop();
@@ -209,21 +221,27 @@ int main(int argc, char *argv[]){
     }
 
     dos_fwrite((void __far *)c, sizeof(float), size, Cbin_handle);
+
   }
   get_time(&end_time);
 
   /////////////////////
   // 片付け
   /////////////////////
-  dos_fclose(Abin_handle);
   dos_fclose(Cbin_handle);
+
+  err = XMS_free(&Amem_p);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_free ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
 
   err = XMS_free(&Bmem_p);
   if(E_HAS_ERROR(err)){
     printf("XMS_free ERROR: code=%02X\n", (err & 0x00FF));
     exit(1);
   }
-  
+
   /////////////////////
   // Result
   /////////////////////
@@ -234,7 +252,7 @@ int main(int argc, char *argv[]){
   print_time(&end_time);
   print_difftime(&start_time, &end_time);
 
-  for(int i=0; i<atoi(argv[2]); i++){
-    printf("\a");
-  }
+  // for(int i=0; i<atoi(argv[2]); i++){
+  //   printf("\a");
+  // }
 }
