@@ -36,17 +36,53 @@ void put_vram(char __far *addr, int box_size, int off_y, int off_x, int y, int x
 //   b = (float __far *)MK_FP(b_seg, 0x0000);
 //   c = (float __far *)MK_FP(c_seg, 0x0000);
 
+
+//   // INSTALLATION CHECK
+//   err = XMS_exists();
+//   if(E_HAS_ERROR(err)){
+//     puts("XMS_exists ERROR: No XMS driver.");
+//     exit(1);
+//   }
+//   puts("XMS driver...OK.");
+
+//   // GET DRIVER ADDRESS
+//   XMS_init();
+
+//   SMEM mem_p;
+//   unsigned long size = 512;
+//   err = XMS_malloc(&mem_p, size*size);
+//   if(E_HAS_ERROR(err)){
+//     printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
+//     exit(1);
+//   }
+
+//   // file -> XMS
 //   uint Abin_handle = 0;
-//   Abin_handle = dos_fopen("../MM512BIN/B_T.bin");
-//   for (int i = 0; i < 2; i++){
+//   Abin_handle = dos_fopen("../MM512BIN/A.bin");
+//   for (int i = 0; i < size; i++){
 //     dos_fread((void __far *)a, sizeof(float), 512, Abin_handle); // 値を512個(1行分)読み込む
-    
-//     for(int x=0; x<512; x++){
-//       printf("%5.1f ", a[x]);
-//     }
-//     puts("");
+//     XMS_write(&mem_p, a, size);
+//     printf("lp=%ld\n", mem_p.linptr);
 //   }
 //   dos_fclose(Abin_handle);
+  
+//   // XMSを先頭に
+//   mem_p.linptr = 0L;
+
+//   // XMS -> file
+//   uint OUTbin_handle = dos_fopen("./HOGE.bin");
+//   for (int i = 0; i < size; i++){
+//     XMS_read(&mem_p, c, size);
+//     dos_fwrite((void __far *)c, sizeof(float), 512, OUTbin_handle); // 値を512個(1行分)読み込む
+//     printf("i%d = %f\n", i, c[0]);
+//   }
+//   dos_fclose(OUTbin_handle);
+
+//   err = XMS_free(&mem_p);
+//   if(E_HAS_ERROR(err)){
+//     printf("XMS_free ERROR: code=%02X\n", (err & 0x00FF));
+//     exit(1);
+//   }
 // }
 
 int main(int argc, char *argv[]){
@@ -81,6 +117,48 @@ int main(int argc, char *argv[]){
   cc = (float __far *)MK_FP(cc_seg, 0x0000);
   printf("0x%lx 0x%lx 0x%lx\n", a, b, c);
 
+  puts("\n=== XMS_Setup ===");
+  // INSTALLATION CHECK
+  err = XMS_exists();
+  if(E_HAS_ERROR(err)){
+    puts("XMS_exists ERROR: No XMS driver.");
+    exit(1);
+  }
+  puts("XMS driver...OK.");
+
+  // GET DRIVER ADDRESS
+  XMS_init();
+
+  // CHECK FREE SPACE (Not required)
+  unsigned int max_block, total;
+  err = XMS_getFreeSpace(&max_block, &total);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_getFreeSpace ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+  printf("=== XMS free space ===\n");
+  printf("max_block: %d[KB]  total: %d[KB]\n\n", max_block, total);
+
+  // malloc
+  SMEM Bmem_p;
+  err = XMS_malloc(&Bmem_p, size*size);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_malloc ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+
+  puts("\n=== file -> XMS ===");
+  // file -> XMS
+  uint Bbin_handle = dos_fopen("../MM512BIN/B_T.bin");
+  for (int i = 0; i < size; i++){
+    dos_fread((void __far *)b, sizeof(float), size, Bbin_handle); // 値を512個(1行分)読み込む
+    XMS_write(&Bmem_p, b, size);
+  }
+  dos_fclose(Bbin_handle);
+
+  // XMSの読み取り番地Offsetを先頭に
+  Bmem_p.linptr = 0L;
+
   puts("\n=== main ===");
   printf("Running"); fflush(stdout);
   char __far *vram0_addr;
@@ -113,9 +191,9 @@ int main(int argc, char *argv[]){
   get_time(&start_time);
   for(long i=0;i<size;i++){
     dos_fread((void __far *)a, sizeof(float), size, Abin_handle); // 値を512個(1行分)読み込む
-    uint Bbin_handle = dos_fopen("../MM512BIN/B_T.bin");
+    Bmem_p.linptr = 0L;
     for(long j=0;j<size;j++){
-      dos_fread((void __far *)b, sizeof(float), size, Bbin_handle); // 値を512個(1行分)読み込む
+      XMS_read(&Bmem_p, b, size);
       finit();
       zeroset(); // zero set
       long c_idx = j; //i*size+j
@@ -129,15 +207,26 @@ int main(int argc, char *argv[]){
       c[c_idx] = fpop();
       put_vram(vram0_addr, 2, 10, 320, i/4, j/4, 0xff);
     }
-    dos_fclose(Bbin_handle);
 
     dos_fwrite((void __far *)c, sizeof(float), size, Cbin_handle);
   }
   get_time(&end_time);
 
+  /////////////////////
+  // 片付け
+  /////////////////////
   dos_fclose(Abin_handle);
   dos_fclose(Cbin_handle);
 
+  err = XMS_free(&Bmem_p);
+  if(E_HAS_ERROR(err)){
+    printf("XMS_free ERROR: code=%02X\n", (err & 0x00FF));
+    exit(1);
+  }
+  
+  /////////////////////
+  // Result
+  /////////////////////
   // printf("c[0] = %f\n", c[0]);
   printf("start_");
   print_time(&start_time);
